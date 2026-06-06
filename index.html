@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator HPP Percetakan Digital - CANVAS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Printable area customization */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #print-area,
+            #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Toast Notification Wrapper -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header / Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md shadow-indigo-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 tracking-tight">CANVAS <span
+                            class="text-indigo-600 font-medium">DigiPrint HPP</span></h1>
+                    <p class="text-xs text-slate-500">Kalkulator Multi-Kategori Cetak & Profit Simulator</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    Versi Pro 4.0 (Plano Integrated)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs (HPP vs Paper Converter) -->
+    <div class="bg-white border-b border-slate-200 no-print shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="tab-btn-hpp" onclick="switchTab('hpp')"
+                    class="border-indigo-600 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Kalkulator HPP Produksi
+                </button>
+                <button id="tab-btn-paper" onclick="switchTab('paper')"
+                    class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Kalkulator Harga Satuan Kertas (Bahan Baku)
+                    <span
+                        class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Baru</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- VIEW 1: MAIN HPP CALCULATOR -->
+    <main id="view-hpp" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full no-print">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Left Side: Interactive Input Form (8 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- Category Selector & Volume Input -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-indigo-600 rounded-full inline-block"></span>
+                            Kategori & Skala Cetak
+                        </h2>
+                        <button onclick="resetForm()"
+                            class="text-sm font-semibold text-slate-500 hover:text-rose-600 flex items-center gap-1.5 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+                            </svg>
+                            Reset Form
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Jenis Produk Dropdown -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600" for="product-category">Pilih Kategori
+                                Cetak</label>
+                            <select id="product-category" onchange="switchProductCategory()"
+                                class="w-full bg-white text-slate-900 font-bold rounded-lg border border-slate-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+                                <option value="a3plus" selected>Digital Press A3+ (Stiker, Art Paper, AC)</option>
+                                <option value="large_format">Large Format / Spanduk (Outdoor / Indoor)</option>
+                                <option value="document">Dokumen Standar A4 / F4 (HVS, Brosur)</option>
+                                <option value="thesis">Eskalasi Skripsi / Tugas Akhir (Cetak + Hardcover)</option>
+                                <option value="notebook">Buku Tulis / Notebook Custom (Isi + Spiral/Staple)</option>
+                            </select>
+                        </div>
+
+                        <!-- Volume Sederhana (Lembar / Qty) -->
+                        <div class="space-y-1.5" id="volume-qty-wrapper">
+                            <label class="block text-xs font-bold text-slate-600" id="volume-label">Jumlah
+                                Produksi</label>
+                            <div class="relative">
+                                <input type="number" id="qty" value="100" min="1" oninput="calculateAll()"
+                                    class="w-full bg-white text-slate-900 font-bold rounded-lg border border-slate-200 pl-12 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                    placeholder="0">
+                                <span
+                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold"
+                                    id="volume-unit-badge">Lembar</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dimensi Spanduk (Khusus Large Format) -->
+                    <div id="large-format-dimensions"
+                        class="hidden p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-4">
+                        <div class="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            </svg>
+                            Kalkulator Ukuran Cetak Spanduk
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-500">Panjang (Meter)</label>
+                                <input type="number" id="banner-length" value="3" step="0.1" min="0.1"
+                                    oninput="calculateBannerArea(); calculateAll();"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-center">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-500">Lebar (Meter)</label>
+                                <input type="number" id="banner-width" value="1" step="0.1" min="0.1"
+                                    oninput="calculateBannerArea(); calculateAll();"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-center">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-500">Jumlah Cetak (Pcs)</label>
+                                <input type="number" id="banner-pcs" value="10" min="1"
+                                    oninput="calculateBannerArea(); calculateAll();"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-center">
+                            </div>
+                        </div>
+                        <div
+                            class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 text-xs">
+                            <span class="text-slate-500">Perincian Ukuran:</span>
+                            <span class="font-bold text-slate-800" id="banner-result-label">3m x 1m x 10 Pcs = <span
+                                    class="text-indigo-600 text-sm">30 m²</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Kalkulator Halaman Buku (Khusus Skripsi & Buku Tulis) -->
+                    <div id="book-pages-calculator"
+                        class="hidden p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-4">
+                        <div class="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            Kalkulator Cetak Isi & Halaman Buku
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-500" id="page-a-label">Halaman
+                                    Hitam Putih (BW)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="book-pages-bw" value="80" min="0"
+                                        oninput="calculateBookPagesCost(); calculateAll();"
+                                        class="w-1/2 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-center text-xs">
+                                    <span class="text-[9px] font-bold text-slate-400">@ Rp<input type="number"
+                                            id="book-cost-bw" value="250"
+                                            class="w-10 bg-transparent border-b border-slate-300 focus:outline-none focus:border-indigo-500 text-center inline-block text-slate-700"
+                                            oninput="calculateBookPagesCost(); calculateAll();"></span>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-bold text-slate-500" id="page-b-label">Halaman
+                                    Warna (Color)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="book-pages-color" value="15" min="0"
+                                        oninput="calculateBookPagesCost(); calculateAll();"
+                                        class="w-1/2 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-center text-xs">
+                                    <span class="text-[9px] font-bold text-slate-400">@ Rp<input type="number"
+                                            id="book-cost-color" value="1500"
+                                            class="w-10 bg-transparent border-b border-slate-300 focus:outline-none focus:border-indigo-500 text-center inline-block text-slate-700"
+                                            oninput="calculateBookPagesCost(); calculateAll();"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 text-xs">
+                            <span class="text-slate-500 font-medium">Estimasi Biaya Cetak Isi (Per Buku):</span>
+                            <span class="font-bold text-slate-800" id="book-result-label">Rp0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. Biaya Pokok (Kategori Wajib) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="text-md font-bold text-slate-900 flex items-center gap-2">
+                        <span
+                            class="flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-bold">1</span>
+                        Biaya Pokok Mesin & Operasional (<span class="unit-text">Per Lembar</span>)
+                    </h3>
+                    <p class="text-xs text-slate-500">Biaya dasar cetak mesin (tinta/toner dan listrik operasional) per
+                        klik atau satuan unit.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Biaya Tinta -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600" id="ink-cost-label">Biaya Tinta / Klik
+                                Toner</label>
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                <input type="number" id="ink-cost" value="1200" oninput="calculateAll()"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                    placeholder="0">
+                            </div>
+                            <span class="text-[10px] text-slate-400 block" id="ink-cost-note">Estimasi klik warna
+                                standar</span>
+                        </div>
+
+                        <!-- Biaya Listrik & Penyusutan -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">Listrik & Depresiasi Mesin</label>
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                <input type="number" id="power-cost" value="300" oninput="calculateAll()"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                    placeholder="0">
+                            </div>
+                            <span class="text-[10px] text-slate-400 block" id="power-cost-note">Biaya listrik per klik +
+                                penyusutan alat</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Bahan Kertas / Media (Opsional / Fleksibel) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-md font-bold text-slate-900 flex items-center gap-2">
+                            <span
+                                class="flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold">2</span>
+                            Bahan Baku / Media Cetak (Opsional)
+                        </h3>
+                        <!-- Toggle Bahan Kertas -->
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="paper-toggle" checked
+                                onchange="toggleSection('paper-section', this)" class="sr-only peer">
+                            <div
+                                class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600">
+                            </div>
+                        </label>
+                    </div>
+                    <div
+                        class="flex items-center justify-between bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                        <p class="text-xs text-indigo-800 font-medium">Beli kertas lembaran plano atau ream besar?
+                            Hitung harga lembar satuan di tab kalkulator bahan baku.</p>
+                        <button onclick="switchTab('paper')"
+                            class="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0">Buka
+                            Alat Konversi &rarr;</button>
+                    </div>
+
+                    <div id="paper-section" class="space-y-4 transition-all duration-200">
+                        <!-- Quick Presets (Injected Dinamis) -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600" id="presets-label">Template Kertas
+                                Populer</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="paper-presets-container">
+                                <!-- Preset Buttons Injected Here -->
+                            </div>
+                        </div>
+
+                        <!-- Manual Input -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600" id="paper-name-label">Nama Kertas
+                                    / Bahan</label>
+                                <input type="text" id="paper-name" value="Art Carton 260g" oninput="calculateAll()"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                    placeholder="Contoh: Art Paper 150g">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600" id="paper-cost-label">Harga Kertas
+                                    (<span class="unit-text">Per Lembar</span>)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                    <input type="number" id="paper-cost" value="750" oninput="calculateAll()"
+                                        class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                        placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Finishing & Jasa Tambahan (Opsional) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-md font-bold text-slate-900 flex items-center gap-2">
+                            <span
+                                class="flex items-center justify-center w-6 h-6 rounded-lg bg-amber-50 text-amber-600 text-xs font-bold">3</span>
+                            Finishing & Jasa Tambahan (Opsional)
+                        </h3>
+                        <!-- Toggle Finishing -->
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="finishing-toggle" checked
+                                onchange="toggleSection('finishing-section', this)" class="sr-only peer">
+                            <div
+                                class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600">
+                            </div>
+                        </label>
+                    </div>
+                    <p class="text-xs text-slate-500">Biaya pengerjaan pasca cetak seperti laminasi, pemotongan, lipat,
+                        jilid, atau ring mata ayam.</p>
+
+                    <div id="finishing-section" class="space-y-4 transition-all duration-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Laminasi Dropdown -->
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600" for="lamination-type">Jenis
+                                    Finishing / Laminasi</label>
+                                <select id="lamination-type" onchange="applyLaminationValue(); calculateAll();"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+                                    <option value="0">Tanpa Laminasi (Rp0)</option>
+                                    <option value="500">Glossy 1 Sisi (Rp500)</option>
+                                    <option value="500">Doff / Matte 1 Sisi (Rp500)</option>
+                                    <option value="1000" selected>Glossy 2 Sisi (Rp1.000)</option>
+                                    <option value="1000">Doff / Matte 2 Sisi (Rp1.000)</option>
+                                    <option value="custom">Input Harga Kustom...</option>
+                                </select>
+                            </div>
+
+                            <!-- Harga Laminasi Custom -->
+                            <div class="space-y-1.5" id="lamination-custom-wrapper">
+                                <label class="block text-xs font-bold text-slate-600" id="lamination-label">Harga
+                                    Finishing Laminasi</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                    <input type="number" id="lamination-cost" value="1000" oninput="calculateAll()"
+                                        class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                        placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Ongkos Potong / Finishing Lain (Flat global atau per lembar) -->
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600" for="cutting-type">Metode Ongkos
+                                    Tambahan (Jilid/Potong)</label>
+                                <select id="cutting-type" onchange="calculateAll()"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+                                    <option value="flat" selected>Biaya Borongan / Flat (Global)</option>
+                                    <option value="per_sheet">Biaya Per Unit Cetak</option>
+                                </select>
+                            </div>
+
+                            <!-- Nilai Ongkos Potong -->
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600" for="cutting-cost"
+                                    id="cutting-cost-title-label">Nominal Jasa Tambahan</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                    <input type="number" id="cutting-cost" value="25000" oninput="calculateAll()"
+                                        class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                                        placeholder="0">
+                                </div>
+                                <span class="text-[10px] text-slate-400 block" id="cutting-note">Dikenakan secara
+                                    borongan ke total produksi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Side: Live Summary (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl space-y-6 sticky top-24">
+
+                    <div class="border-b border-slate-800 pb-4">
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Hasil Analisis
+                            CANVAS</span>
+                        <h3 class="text-xl font-bold mt-1">Ringkasan HPP & Margin</h3>
+                    </div>
+
+                    <!-- Ringkasan HPP -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-400">Total Produksi</span>
+                            <span class="font-semibold text-slate-200" id="summary-qty">100 Lembar</span>
+                        </div>
+                        <div class="flex justify-between items-end border-b border-slate-800 pb-3">
+                            <span class="text-sm text-slate-400">Total HPP Produksi</span>
+                            <div class="text-right">
+                                <span class="text-2xl font-extrabold text-white" id="summary-total-hpp">Rp0</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm text-slate-400">HPP / <span class="unit-text-short">Lbr</span></span>
+                            <div class="text-right">
+                                <span class="text-xl font-bold text-indigo-400" id="summary-unit-hpp">Rp0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Harga Jual -->
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Simulator Harga
+                                Jual</span>
+                            <div
+                                class="flex items-center gap-1.5 bg-slate-700/50 px-2 py-0.5 rounded text-xs font-bold text-white">
+                                <span>Profit:</span>
+                                <input type="number" id="profit-percent" value="40" min="0" max="500"
+                                    oninput="calculateAll()"
+                                    class="w-10 bg-transparent text-right focus:outline-none text-indigo-300 font-bold">%
+                            </div>
+                        </div>
+
+                        <!-- Slider -->
+                        <div class="space-y-1">
+                            <input type="range" id="profit-slider" min="5" max="150" value="40"
+                                oninput="syncSliderToInput(this.value)"
+                                class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>Min: 5%</span>
+                                <span>Idealkan: 35-50%</span>
+                                <span>Max: 150%</span>
+                            </div>
+                        </div>
+
+                        <!-- Harga Jual -->
+                        <div class="pt-2 border-t border-slate-700/50 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-slate-300">Rekomendasi Jual / <span
+                                        class="unit-text-short">Lbr</span></span>
+                                <span class="text-lg font-bold text-emerald-400" id="summary-unit-price">Rp0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-slate-400">Total Omset Penjualan</span>
+                                <span class="text-sm font-semibold text-slate-200" id="summary-total-revenue">Rp0</span>
+                            </div>
+                            <div
+                                class="flex justify-between items-center bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/80">
+                                <span class="text-xs font-bold text-slate-300">Estimasi Laba Bersih</span>
+                                <span class="text-md font-bold text-emerald-400" id="summary-total-profit">Rp0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi -->
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button type="button" onclick="saveToHistory()"
+                            class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-900/30 flex items-center justify-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Simpan Hasil
+                        </button>
+                        <button type="button" onclick="triggerPrint()"
+                            class="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 border border-slate-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Cetak PDF
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Section: Riwayat -->
+        <div class="mt-12 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 no-print">
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+                <div>
+                    <h3 class="text-md font-bold text-slate-900">Riwayat Perbandingan Kalkulasi</h3>
+                    <p class="text-xs text-slate-500">Daftar skenario kalkulasi yang disimpan pada sesi ini untuk diulas
+                        atau dibandingkan.</p>
+                </div>
+                <button onclick="clearHistory()" id="clear-history-btn"
+                    class="text-xs font-semibold text-rose-600 hover:text-rose-700 transition-colors hidden flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Hapus Semua Riwayat
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="history-empty-state" class="py-10 text-center space-y-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-slate-300" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                <p class="text-xs font-semibold text-slate-400">Belum ada riwayat perhitungan yang disimpan.</p>
+                <p class="text-[11px] text-slate-400">Isi parameter biaya di atas lalu klik tombol "Simpan Hasil".</p>
+            </div>
+
+            <!-- History Table -->
+            <div id="history-table-wrapper" class="overflow-x-auto hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            class="border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/50">
+                            <th class="py-3 px-4">Waktu</th>
+                            <th class="py-3 px-4">Kategori / Produk</th>
+                            <th class="py-3 px-4">Bahan / Media</th>
+                            <th class="py-3 px-4 text-center">Volume (Qty)</th>
+                            <th class="py-3 px-4 text-right">HPP / Unit</th>
+                            <th class="py-3 px-4 text-right">Total HPP</th>
+                            <th class="py-3 px-4 text-center">Profit %</th>
+                            <th class="py-3 px-4 text-right">Rekom Jual</th>
+                            <th class="py-3 px-4 text-right">Total Laba</th>
+                            <th class="py-3 px-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-rows" class="divide-y divide-slate-100 text-xs">
+                        <!-- Rows injected via Javascript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PAPER CONVERTER / UNIT PRICE CALCULATOR (NEW PAGE) -->
+    <main id="view-paper-converter"
+        class="hidden flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full no-print">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Left Side: Paper Calculator Input (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+                            Kalkulator Bahan Baku Kertas
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Gunakan alat ini untuk mencari tahu harga modal kertas
+                            per unit secara presisi sebelum dimasukkan ke HPP cetak.</p>
+                    </div>
+
+                    <!-- Input Detail Bahan -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">Nama Bahan Baku</label>
+                            <input type="text" id="paper-calc-name" value="Ivory 270g Plano"
+                                class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                                placeholder="Misal: Ivory 310g">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">Skema Pembelian Kertas</label>
+                            <select id="paper-calc-type" onchange="togglePaperCalcMode()"
+                                class="w-full bg-white text-slate-900 font-bold rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                                <option value="ream" selected>Grosir Ream / Pack (Isi Banyak)</option>
+                                <option value="plano">Lembaran Plano (Potong Sendiri)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- METHOD A: REAM / PACK -->
+                    <div id="paper-mode-ream" class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block">Mode Ream /
+                            Grosir Pack</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600">Harga Beli Satu Pak (Rp)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                    <input type="number" id="paper-ream-price" value="230000"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600">Isi Lembar per Pak</label>
+                                <input type="number" id="paper-ream-qty" value="500" min="1"
+                                    oninput="calculatePaperUnit()"
+                                    class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- METHOD B: PLANO -->
+                    <div id="paper-mode-plano"
+                        class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Mode Potong
+                                Lembaran Plano</span>
+                            <span
+                                class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">Geometric
+                                Cutting Opt</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600">Harga 1 Lembar Plano (Rp)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                    <input type="number" id="paper-plano-price" value="4500"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-600">Biaya Tambahan Jasa Potong Plano
+                                    (Flat)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">Rp</span>
+                                    <input type="number" id="paper-plano-cut-fee" value="500"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                                </div>
+                                <span class="text-[10px] text-slate-400 block">Jasa potong mesin / ongkos transport per
+                                    plano</span>
+                            </div>
+                        </div>
+
+                        <!-- Cutting Dimensions Helper -->
+                        <div class="bg-white p-4 rounded-xl border border-slate-200/80 space-y-3">
+                            <label class="block text-xs font-bold text-slate-700">Skema Ukuran Plano & Target
+                                Potong</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-semibold mb-1">Ukuran Kertas
+                                        Plano</label>
+                                    <select id="plano-preset-size"
+                                        onchange="applyPlanoPresetSizes(); calculatePaperUnit();"
+                                        class="w-full bg-white text-slate-800 text-xs rounded-lg border border-slate-200 p-2 focus:outline-none">
+                                        <option value="79x109" selected>Plano Standard (79 x 109 cm)</option>
+                                        <option value="65x100">Plano Sedang (65 x 100 cm)</option>
+                                        <option value="61x86">Plano Kecil (61 x 86 cm)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-semibold mb-1">Target Ukuran
+                                        Potong</label>
+                                    <select id="plano-target-size"
+                                        onchange="applyPlanoPresetSizes(); calculatePaperUnit();"
+                                        class="w-full bg-white text-slate-800 text-xs rounded-lg border border-slate-200 p-2 focus:outline-none">
+                                        <option value="32.5x48.5" selected>A3+ (32.5 x 48.5 cm)</option>
+                                        <option value="21x29.7">A4 (21 x 29.7 cm)</option>
+                                        <option value="21.5x33">F4 Folio (21.5 x 33 cm)</option>
+                                        <option value="14.8x21">A5 (14.8 x 21 cm)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+                                <div>
+                                    <label class="block text-[9px] text-slate-400">P. Plano (cm)</label>
+                                    <input type="number" id="plano-width" value="79" step="0.1"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-slate-50 text-slate-800 text-center font-bold text-xs rounded border border-slate-200 p-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] text-slate-400">L. Plano (cm)</label>
+                                    <input type="number" id="plano-height" value="109" step="0.1"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-slate-50 text-slate-800 text-center font-bold text-xs rounded border border-slate-200 p-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] text-slate-400">P. Target (cm)</label>
+                                    <input type="number" id="target-width" value="32.5" step="0.1"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-slate-50 text-slate-800 text-center font-bold text-xs rounded border border-slate-200 p-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] text-slate-400">L. Target (cm)</label>
+                                    <input type="number" id="target-height" value="48.5" step="0.1"
+                                        oninput="calculatePaperUnit()"
+                                        class="w-full bg-slate-50 text-slate-800 text-center font-bold text-xs rounded border border-slate-200 p-1">
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-emerald-50 text-emerald-800 p-3 rounded-xl border border-emerald-100 flex items-center justify-between text-xs font-semibold">
+                                <span>Hasil Potongan Optimal per Plano:</span>
+                                <span class="text-sm font-bold text-emerald-700" id="plano-calculated-yield">4
+                                    Lembar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Paper Result & Integration Action (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl space-y-6 sticky top-24">
+                    <div class="border-b border-slate-800 pb-4">
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Hasil Konversi
+                            Satuan</span>
+                        <h3 class="text-xl font-bold mt-1">Harga Pokok Kertas</h3>
+                    </div>
+
+                    <!-- Big Price Display -->
+                    <div class="text-center py-6 bg-slate-800/50 rounded-2xl border border-slate-800">
+                        <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Harga Per Lembar</span>
+                        <div class="text-4xl font-black text-emerald-400 mt-2" id="paper-calc-unit-result">Rp0</div>
+                        <span class="text-[11px] text-slate-400 block mt-1" id="paper-calc-summary-text">Dari total pack
+                            pembelian</span>
+                    </div>
+
+                    <!-- Specs List -->
+                    <div class="space-y-3.5 text-sm border-t border-slate-800 pt-4">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Nama Bahan Baku:</span>
+                            <span class="font-semibold text-slate-200" id="paper-calc-summary-name">Ivory 270g
+                                Plano</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Metode Konversi:</span>
+                            <span class="font-semibold text-slate-200" id="paper-calc-summary-method">Lembaran
+                                Plano</span>
+                        </div>
+                        <div class="flex justify-between" id="paper-calc-row-cutting">
+                            <span class="text-slate-400">Hasil Potongan:</span>
+                            <span class="font-semibold text-emerald-400" id="paper-calc-summary-yield">4 Lembar A3+ /
+                                Plano</span>
+                        </div>
+                    </div>
+
+                    <!-- Action: Terapkan / Integrasikan langsung ke HPP -->
+                    <div class="space-y-3 pt-2">
+                        <button type="button" onclick="applyPaperToMainHpp()"
+                            class="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-900/30 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            Gunakan Sebagai Bahan Utama HPP
+                        </button>
+                        <button type="button" onclick="switchTab('hpp')"
+                            class="w-full py-3.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all text-center block">
+                            Kembali ke Kalkulator Utama
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER / CREDIT -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-xs text-slate-500">&copy; 2026 CANVAS DigiPrint Studio. Hak Cipta Dilindungi.</p>
+            <p class="text-[10px] text-slate-400">Didesain khusus sebagai alat analitik multi-fungsi untuk industri UMKM
+                percetakan kreatif.</p>
+        </div>
+    </footer>
+
+    <!-- HIDDEN PRINT TEMPLATE (Kertas Terbuka Untuk Render Cetak) -->
+    <div id="print-area" class="hidden p-8 bg-white text-slate-900">
+        <div class="border-b-2 border-slate-800 pb-6 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">NOTA ESTIMASI BIAYA</h1>
+                    <p class="text-sm text-slate-500 mt-1">Estimasi Produksi Digital Printing</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-bold text-indigo-600">CANVAS DigiPrint</p>
+                    <p class="text-xs text-slate-500" id="print-date">01 Januari 2026</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 mb-8">
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Spesifikasi Cetak</h4>
+                <div class="mt-2 space-y-1.5 text-sm">
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Kategori Cetak:</span>
+                        <span class="font-bold text-slate-900" id="print-spec-category">Digital Press A3+</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Volume Cetak:</span>
+                        <span class="font-bold text-slate-900" id="print-spec-qty">100 Lembar</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Bahan Baku / Media:</span>
+                        <span class="font-bold text-slate-900" id="print-spec-paper">Art Carton 260g</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Laminasi / Finishing:</span>
+                        <span class="font-bold text-slate-900" id="print-spec-lamination">Glossy 2 Sisi</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Detail Finansial</h4>
+                <div class="mt-2 space-y-1.5 text-sm">
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Target Profit Margin:</span>
+                        <span class="font-bold text-emerald-600" id="print-spec-margin">40%</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Rekomendasi Harga Jual:</span>
+                        <span class="font-bold text-slate-900" id="print-spec-unit-price">Rp0 / Unit</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Total Omset:</span>
+                        <span class="font-bold text-slate-900" id="print-spec-total-revenue">Rp0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Perincian Biaya -->
+        <div class="mb-8">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Rincian Komponen Biaya (HPP)</h4>
+            <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-slate-300 text-xs font-bold text-slate-600 uppercase">
+                        <th class="py-2">Komponen Biaya</th>
+                        <th class="py-2 text-right">Harga Satuan</th>
+                        <th class="py-2 text-right">Volume</th>
+                        <th class="py-2 text-right">Sub-Total</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    <tr>
+                        <td class="py-2 font-medium" id="print-comp-ink-label">Biaya Tinta / Toner (Klik)</td>
+                        <td class="py-2 text-right" id="print-comp-ink-unit">Rp0</td>
+                        <td class="py-2 text-right" id="print-comp-ink-qty">0</td>
+                        <td class="py-2 text-right" id="print-comp-ink-sub">Rp0</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 font-medium">Listrik & Depresiasi Mesin</td>
+                        <td class="py-2 text-right" id="print-comp-power-unit">Rp0</td>
+                        <td class="py-2 text-right" id="print-comp-power-qty">0</td>
+                        <td class="py-2 text-right" id="print-comp-power-sub">Rp0</td>
+                    </tr>
+                    <tr id="print-row-paper">
+                        <td class="py-2 font-medium" id="print-comp-paper-name">Art Carton 260g (Bahan)</td>
+                        <td class="py-2 text-right" id="print-comp-paper-unit">Rp0</td>
+                        <td class="py-2 text-right" id="print-comp-paper-qty">0</td>
+                        <td class="py-2 text-right" id="print-comp-paper-sub">Rp0</td>
+                    </tr>
+                    <tr id="print-row-lamination">
+                        <td class="py-2 font-medium">Laminasi Plastik / Finishing Lapisan</td>
+                        <td class="py-2 text-right" id="print-comp-lam-unit">Rp0</td>
+                        <td class="py-2 text-right" id="print-comp-lam-qty">0</td>
+                        <td class="py-2 text-right" id="print-comp-lam-sub">Rp0</td>
+                    </tr>
+                    <tr id="print-row-cutting">
+                        <td class="py-2 font-medium" id="print-comp-cut-label">Biaya Potong / Finishing Lain</td>
+                        <td class="py-2 text-right" id="print-comp-cut-unit">Rp0</td>
+                        <td class="py-2 text-right" id="print-comp-cut-qty">-</td>
+                        <td class="py-2 text-right" id="print-comp-cut-sub">Rp0</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="border-t-2 border-slate-300 font-bold">
+                        <td class="py-3 text-base" colspan="3">TOTAL ESTIMASI HPP PRODUKSI</td>
+                        <td class="py-3 text-right text-base text-indigo-600" id="print-comp-total-hpp">Rp0</td>
+                    </tr>
+                    <tr class="font-bold text-xs text-slate-500">
+                        <td class="py-1" colspan="3">Estimasi HPP Per Unit</td>
+                        <td class="py-1 text-right" id="print-comp-unit-hpp">Rp0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="grid grid-cols-2 gap-8 pt-8 mt-12 border-t border-slate-200">
+            <div>
+                <p class="text-xs text-slate-400 italic">Catatan Penting:</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed">Nota ini merupakan simulasi internal berdasarkan
+                    harga komponen saat ini. Fluktuasi harga bahan mentah dan biaya operasional dapat memengaruhi nilai
+                    nyata di lapangan.</p>
+            </div>
+            <div class="text-right flex flex-col justify-end items-end">
+                <div class="border-t border-slate-300 w-48 text-center pt-2">
+                    <p class="text-xs font-bold text-slate-800">Operator Percetakan</p>
+                    <p class="text-[10px] text-slate-400 mt-8">Tanda Tangan & Nama Terang</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // In-memory data states
+        let calculationHistory = [];
+        let calculatedPaperUnitCost = 0; // Temp holder for paper calculation transfers
+
+        // Navigation Tabs Engine
+        function switchTab(tabId) {
+            const tabHpp = document.getElementById('tab-btn-hpp');
+            const tabPaper = document.getElementById('tab-btn-paper');
+            const viewHpp = document.getElementById('view-hpp');
+            const viewPaper = document.getElementById('view-paper-converter');
+
+            if (tabId === 'hpp') {
+                // Active HPP View
+                tabHpp.className = "border-indigo-600 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 transition-all";
+                tabPaper.className = "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all";
+                viewHpp.classList.remove('hidden');
+                viewPaper.classList.add('hidden');
+            } else {
+                // Active Paper Converter View
+                tabPaper.className = "border-emerald-500 text-emerald-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 transition-all";
+                tabHpp.className = "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all";
+                viewHpp.classList.add('hidden');
+                viewPaper.classList.remove('hidden');
+                calculatePaperUnit(); // recalculate upon open
+            }
+        }
+
+        // Toggle Paper Calculation Modes (Ream vs Plano)
+        function togglePaperCalcMode() {
+            const mode = document.getElementById('paper-calc-type').value;
+            const reamSection = document.getElementById('paper-mode-ream');
+            const planoSection = document.getElementById('paper-mode-plano');
+            const cutRowSummary = document.getElementById('paper-calc-row-cutting');
+
+            if (mode === 'ream') {
+                reamSection.classList.remove('hidden');
+                planoSection.classList.add('hidden');
+                cutRowSummary.classList.add('hidden');
+            } else {
+                reamSection.classList.add('hidden');
+                planoSection.classList.remove('hidden');
+                cutRowSummary.classList.remove('hidden');
+            }
+            calculatePaperUnit();
+        }
+
+        // Apply Preset sizes for Plano Cutting
+        function applyPlanoPresetSizes() {
+            const planoPreset = document.getElementById('plano-preset-size').value;
+            const targetPreset = document.getElementById('plano-target-size').value;
+
+            // Apply plano size dims
+            if (planoPreset === "79x109") {
+                document.getElementById('plano-width').value = 79;
+                document.getElementById('plano-height').value = 109;
+            } else if (planoPreset === "65x100") {
+                document.getElementById('plano-width').value = 65;
+                document.getElementById('plano-height').value = 100;
+            } else if (planoPreset === "61x86") {
+                document.getElementById('plano-width').value = 61;
+                document.getElementById('plano-height').value = 86;
+            }
+
+            // Apply target cut dims
+            if (targetPreset === "32.5x48.5") {
+                document.getElementById('target-width').value = 32.5;
+                document.getElementById('target-height').value = 48.5;
+            } else if (targetPreset === "21x29.7") {
+                document.getElementById('target-width').value = 21;
+                document.getElementById('target-height').value = 29.7;
+            } else if (targetPreset === "21.5x33") {
+                document.getElementById('target-width').value = 21.5;
+                document.getElementById('target-height').value = 33;
+            } else if (targetPreset === "14.8x21") {
+                document.getElementById('target-width').value = 14.8;
+                document.getElementById('target-height').value = 21;
+            }
+        }
+
+        // Geometric Cutting Optimization (Calculates exact optimal cuts from Plano sheets)
+        function getOptimalPlanoYield(planoW, planoH, targetW, targetH) {
+            if (planoW <= 0 || planoH <= 0 || targetW <= 0 || targetH <= 0) return 0;
+
+            // Option A: Portrait style alignment
+            const colsA = Math.floor(planoW / targetW);
+            const rowsA = Math.floor(planoH / targetH);
+            const yieldA = colsA * rowsA;
+
+            // Option B: Landscape style alignment (Rotated 90 deg)
+            const colsB = Math.floor(planoW / targetH);
+            const rowsB = Math.floor(planoH / targetW);
+            const yieldB = colsB * rowsB;
+
+            // Find largest yield geometrically
+            return Math.max(yieldA, yieldB);
+        }
+
+        // Paper Unit Price Calculator Engine
+        function calculatePaperUnit() {
+            const name = document.getElementById('paper-calc-name').value || 'Bahan Kustom';
+            const mode = document.getElementById('paper-calc-type').value;
+
+            let unitCost = 0;
+            let summaryText = "";
+            let methodLabel = "";
+            let yieldLabel = "";
+
+            if (mode === 'ream') {
+                const packPrice = parseFloat(document.getElementById('paper-ream-price').value) || 0;
+                const sheetsQty = Math.max(1, parseInt(document.getElementById('paper-ream-qty').value) || 1);
+
+                unitCost = packPrice / sheetsQty;
+                summaryText = `Hasil pembagian Rp${packPrice.toLocaleString('id-ID')} / ${sheetsQty} lembar.`;
+                methodLabel = "Grosir Ream / Pack";
+            } else {
+                // Mode Plano
+                const planoPrice = parseFloat(document.getElementById('paper-plano-price').value) || 0;
+                const cutFee = parseFloat(document.getElementById('paper-plano-cut-fee').value) || 0;
+
+                const planoW = parseFloat(document.getElementById('plano-width').value) || 0;
+                const planoH = parseFloat(document.getElementById('plano-height').value) || 0;
+                const targetW = parseFloat(document.getElementById('target-width').value) || 0;
+                const targetH = parseFloat(document.getElementById('target-height').value) || 0;
+
+                const cutsYield = getOptimalPlanoYield(planoW, planoH, targetW, targetH);
+                const optimalYield = Math.max(1, cutsYield);
+
+                // Formula: Unit Cost = (Plano Price + Cut Fee) / Yield
+                unitCost = (planoPrice + cutFee) / optimalYield;
+
+                document.getElementById('plano-calculated-yield').innerText = `${cutsYield} Lembar`;
+                summaryText = `Rumus: (Rp${planoPrice.toLocaleString('id-ID')} Plano + Rp${cutFee.toLocaleString('id-ID')} Ongkos Potong) / ${cutsYield} lembar hasil.`;
+                methodLabel = "Potong Plano";
+                yieldLabel = `${cutsYield} Lembar per Plano`;
+            }
+
+            calculatedPaperUnitCost = Math.round(unitCost);
+
+            // Update UI
+            document.getElementById('paper-calc-unit-result').innerText = formatRupiah(calculatedPaperUnitCost);
+            document.getElementById('paper-calc-summary-text').innerText = summaryText;
+            document.getElementById('paper-calc-summary-name').innerText = name;
+            document.getElementById('paper-calc-summary-method').innerText = methodLabel;
+            document.getElementById('paper-calc-summary-yield').innerText = yieldLabel;
+        }
+
+        // Integrate Calculated paper back to Main HPP Form
+        function applyPaperToMainHpp() {
+            const paperName = document.getElementById('paper-calc-name').value || "Bahan Baku Hasil Konversi";
+
+            // Apply to live main forms
+            document.getElementById('paper-toggle').checked = true;
+            toggleSection('paper-section', document.getElementById('paper-toggle'));
+
+            document.getElementById('paper-name').value = paperName;
+            document.getElementById('paper-cost').value = calculatedPaperUnitCost;
+
+            showToast(`Sukses! '${paperName}' diterapkan dengan harga ${formatRupiah(calculatedPaperUnitCost)}/lembar`, 'success');
+
+            // Re-calculate the main HPP with new values
+            calculateAll();
+
+            // Switch tab back to main
+            switchTab('hpp');
+        }
+
+        // Dynamic presets per category (including new Thesis & Notebook categories)
+        const presetsData = {
+            a3plus: {
+                label: "Digital Press A3+",
+                unit: "Lembar",
+                unitShort: "Lbr",
+                inkCost: 1200,
+                inkLabel: "Biaya Tinta / Klik Toner",
+                inkNote: "Estimasi klik warna standar",
+                powerCost: 300,
+                powerNote: "Listrik & depresiasi per klik A3+",
+                papers: [
+                    { name: "Art Paper 150g", cost: 450 },
+                    { name: "Art Carton 260g", cost: 750 },
+                    { name: "Stiker Chromo", cost: 1200 },
+                    { name: "Stiker Vinyl", cost: 3000 }
+                ],
+                defaultPaper: "Art Carton 260g",
+                defaultPaperCost: 750,
+                cuttingLabel: "Jasa Potong / Jilid",
+                laminationOptions: [
+                    { name: "Tanpa Laminasi (Rp0)", val: 0 },
+                    { name: "Glossy 1 Sisi (Rp500)", val: 500 },
+                    { name: "Doff 1 Sisi (Rp500)", val: 500 },
+                    { name: "Glossy 2 Sisi (Rp1.000)", val: 1000 },
+                    { name: "Doff 2 Sisi (Rp1.000)", val: 1000 }
+                ],
+                defaultLaminationVal: 1000,
+                defaultCuttingVal: 25000,
+                defaultQty: 100
+            },
+            large_format: {
+                label: "Large Format (Banner)",
+                unit: "m²",
+                unitShort: "m²",
+                inkCost: 8000,
+                inkLabel: "Biaya Tinta / Solvent",
+                inkNote: "Konsumsi tinta per meter persegi",
+                powerCost: 1500,
+                powerNote: "Operasional mesin per meter persegi",
+                papers: [
+                    { name: "Flexi China 280g", cost: 12000 },
+                    { name: "Flexi Korea 340g", cost: 20000 },
+                    { name: "Flexi Korchin 440g", cost: 26000 },
+                    { name: "Albatros (Indoor)", cost: 35000 }
+                ],
+                defaultPaper: "Flexi China 280g",
+                defaultPaperCost: 12000,
+                cuttingLabel: "Mata Ayam / Kolong Spanduk",
+                laminationOptions: [
+                    { name: "Tanpa Laminasi (Rp0)", val: 0 },
+                    { name: "Laminasi Dingin (Rp8.000)", val: 8000 },
+                    { name: "Laminasi Glossy (Rp10.000)", val: 10000 }
+                ],
+                defaultLaminationVal: 0,
+                defaultCuttingVal: 15000,
+                defaultQty: 10
+            },
+            document: {
+                label: "Dokumen Standard (A4/F4)",
+                unit: "Lembar",
+                unitShort: "Lbr",
+                inkCost: 350,
+                inkLabel: "Biaya Tinta / Toner",
+                inkNote: "Cetak warna/BW per halaman",
+                powerCost: 100,
+                powerNote: "Operasional printer per halaman",
+                papers: [
+                    { name: "HVS 75g A4", cost: 150 },
+                    { name: "HVS 80g F4", cost: 200 },
+                    { name: "Paperline Gold A4", cost: 250 },
+                    { name: "Kertas Foto Premium", cost: 1500 }
+                ],
+                defaultPaper: "HVS 75g A4",
+                defaultPaperCost: 150,
+                cuttingLabel: "Biaya Jilid / Staple",
+                laminationOptions: [
+                    { name: "Tanpa Laminasi (Rp0)", val: 0 },
+                    { name: "Laminasi Dingin A4 (Rp1.500)", val: 1500 },
+                    { name: "Mika Cover Depan (Rp1.000)", val: 1000 }
+                ],
+                defaultLaminationVal: 0,
+                defaultCuttingVal: 5000,
+                defaultQty: 100
+            },
+            thesis: {
+                label: "Eskalasi Skripsi / Tugas Akhir",
+                unit: "Buku",
+                unitShort: "Buku",
+                inkCost: 42500,
+                inkLabel: "Biaya Cetak Isi (Halaman)",
+                inkNote: "Dihitung berdasarkan halaman isi skripsi",
+                powerCost: 1000,
+                powerNote: "Penyusutan alat binding & listrik per buku",
+                papers: [
+                    { name: "Hardcover Board Tebal + Karton", cost: 15000 },
+                    { name: "Hardcover Emboss Foil Mas / Perak", cost: 25000 },
+                    { name: "Softcover Lux Linen 250g", cost: 6000 },
+                    { name: "Softcover Buffalo Leather Paper", cost: 4000 }
+                ],
+                defaultPaper: "Hardcover Board Tebal + Karton",
+                defaultPaperCost: 15000,
+                cuttingLabel: "Jasa Laminasi Emas & Jahit Buku",
+                laminationOptions: [
+                    { name: "Laminasi Doff Cover (Rp1.500)", val: 1500 },
+                    { name: "Laminasi Glossy Cover (Rp1.500)", val: 1500 },
+                    { name: "Tanpa Laminasi Cover (Rp0)", val: 0 }
+                ],
+                defaultLaminationVal: 1500,
+                defaultCuttingVal: 15000,
+                defaultQty: 3
+            },
+            notebook: {
+                label: "Buku Tulis / Notebook Custom",
+                unit: "Buku",
+                unitShort: "Buku",
+                inkCost: 7200,
+                inkLabel: "Biaya Cetak Isi Notebook",
+                inkNote: "Dihitung berdasarkan jumlah lembar isi notebook",
+                powerCost: 500,
+                powerNote: "Operasional mesin jilid & lipat",
+                papers: [
+                    { name: "Art Carton 260g (Softcover)", cost: 1500 },
+                    { name: "Kraft Cardboard Retro 350g", cost: 2000 },
+                    { name: "Hardboard Custom Ring Binder", cost: 12000 },
+                    { name: "Mika Transparan Sand / Frosted", cost: 3000 }
+                ],
+                defaultPaper: "Art Carton 260g (Softcover)",
+                defaultPaperCost: 1500,
+                cuttingLabel: "Jilid Spiral Kawat (Wire-O)",
+                laminationOptions: [
+                    { name: "Laminasi Doff Cover (Rp1.500)", val: 1500 },
+                    { name: "Laminasi Glossy Cover (Rp1.500)", val: 1500 },
+                    { name: "Tanpa Laminasi Cover (Rp0)", val: 0 }
+                ],
+                defaultLaminationVal: 1500,
+                defaultCuttingVal: 8000,
+                defaultQty: 20
+            }
+        };
+
+        // Switch active category and load UI definitions
+        function switchProductCategory() {
+            const category = document.getElementById('product-category').value;
+            const meta = presetsData[category];
+
+            // 1. Update Units text globally
+            const unitsText = document.querySelectorAll('.unit-text');
+            unitsText.forEach(el => el.innerText = `Per ${meta.unit}`);
+
+            const unitsTextShort = document.querySelectorAll('.unit-text-short');
+            unitsTextShort.forEach(el => el.innerText = meta.unitShort);
+
+            document.getElementById('volume-unit-badge').innerText = meta.unit;
+
+            // 2. Conditionally Show/Hide Large Format & Book Pages Dimension block
+            const dimBlock = document.getElementById('large-format-dimensions');
+            const bookPagesBlock = document.getElementById('book-pages-calculator');
+            const qtyWrapper = document.getElementById('volume-qty-wrapper');
+            const inkInput = document.getElementById('ink-cost');
+
+            if (category === 'large_format') {
+                dimBlock.classList.remove('hidden');
+                bookPagesBlock.classList.add('hidden');
+                // Lock manual Qty input because it is calculated by dimensions
+                document.getElementById('qty').readOnly = true;
+                document.getElementById('qty').classList.add('bg-slate-100', 'cursor-not-allowed');
+                document.getElementById('qty').classList.remove('bg-white');
+                calculateBannerArea();
+            } else if (category === 'thesis' || category === 'notebook') {
+                dimBlock.classList.add('hidden');
+                bookPagesBlock.classList.remove('hidden');
+                document.getElementById('qty').readOnly = false;
+                document.getElementById('qty').classList.remove('bg-slate-100', 'cursor-not-allowed');
+                document.getElementById('qty').classList.add('bg-white');
+                document.getElementById('qty').value = meta.defaultQty;
+
+                // Set Labels for book pages calculator
+                if (category === 'thesis') {
+                    document.getElementById('book-pages-bw').value = 80;
+                    document.getElementById('book-cost-bw').value = 250;
+                    document.getElementById('book-pages-color').value = 15;
+                    document.getElementById('book-cost-color').value = 1500;
+                    document.getElementById('page-a-label').innerText = "Halaman Hitam Putih (BW)";
+                    document.getElementById('page-b-label').innerText = "Halaman Warna (Color)";
+                } else { // notebook
+                    document.getElementById('book-pages-bw').value = 60;
+                    document.getElementById('book-cost-bw').value = 120;
+                    document.getElementById('book-pages-color').value = 0;
+                    document.getElementById('book-cost-color').value = 1000;
+                    document.getElementById('page-a-label').innerText = "Halaman Bergaris / Polos";
+                    document.getElementById('page-b-label').innerText = "Halaman Sisipan Berwarna";
+                }
+                calculateBookPagesCost();
+            } else {
+                dimBlock.classList.add('hidden');
+                bookPagesBlock.classList.add('hidden');
+                document.getElementById('qty').readOnly = false;
+                document.getElementById('qty').classList.remove('bg-slate-100', 'cursor-not-allowed');
+                document.getElementById('qty').classList.add('bg-white');
+                document.getElementById('qty').value = meta.defaultQty;
+            }
+
+            // Lock / Unlock Ink cost based on book page calculations
+            if (category === 'thesis' || category === 'notebook') {
+                inkInput.readOnly = true;
+                inkInput.classList.add('bg-slate-100', 'cursor-not-allowed');
+                inkInput.classList.remove('bg-white');
+            } else {
+                inkInput.readOnly = false;
+                inkInput.classList.remove('bg-slate-100', 'cursor-not-allowed');
+                inkInput.classList.add('bg-white');
+                inkInput.value = meta.inkCost;
+            }
+
+            // 3. Load Base costs & Notes
+            document.getElementById('ink-cost-label').innerText = meta.inkLabel;
+            document.getElementById('ink-cost-note').innerText = meta.inkNote;
+            document.getElementById('power-cost').value = meta.powerCost;
+            document.getElementById('power-cost-note').innerText = meta.powerNote;
+
+            // 4. Load Papers Presets
+            document.getElementById('paper-name').value = meta.defaultPaper;
+            document.getElementById('paper-cost').value = meta.defaultPaperCost;
+
+            const presetsContainer = document.getElementById('paper-presets-container');
+            presetsContainer.innerHTML = '';
+            meta.papers.forEach(pap => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => applyPaperPreset(pap.name, pap.cost);
+                btn.className = "preset-paper-btn py-1.5 px-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-300 text-xs font-medium rounded-lg text-slate-700 transition-all text-center";
+                btn.innerHTML = `${pap.name}<br><span class="text-[10px] text-slate-400">Rp${pap.cost.toLocaleString('id-ID')}</span>`;
+                presetsContainer.appendChild(btn);
+            });
+
+            // Highlight first preset
+            if (presetsContainer.firstChild) {
+                presetsContainer.firstChild.classList.add('bg-indigo-50', 'text-indigo-600', 'border-indigo-300');
+            }
+
+            // 5. Load Lamination Dropdown
+            const lamSelect = document.getElementById('lamination-type');
+            lamSelect.innerHTML = '';
+            meta.laminationOptions.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt.val;
+                o.innerText = opt.name;
+                if (opt.val === meta.defaultLaminationVal) {
+                    o.selected = true;
+                }
+                lamSelect.appendChild(o);
+            });
+            const oCustom = document.createElement('option');
+            oCustom.value = 'custom';
+            oCustom.innerText = 'Input Harga Kustom...';
+            lamSelect.appendChild(oCustom);
+
+            document.getElementById('lamination-cost').value = meta.defaultLaminationVal;
+            applyLaminationValue();
+
+            // 6. Finishing Labels
+            document.getElementById('cutting-cost-title-label').innerText = meta.cuttingLabel;
+            document.getElementById('cutting-cost').value = meta.defaultCuttingVal;
+
+            calculateAll();
+        }
+
+        // Calculation of book inner pages cost (pages count * cost)
+        function calculateBookPagesCost() {
+            const bwPages = parseInt(document.getElementById('book-pages-bw').value) || 0;
+            const bwCost = parseInt(document.getElementById('book-cost-bw').value) || 0;
+            const colPages = parseInt(document.getElementById('book-pages-color').value) || 0;
+            const colCost = parseInt(document.getElementById('book-cost-color').value) || 0;
+
+            const totalIsiCost = (bwPages * bwCost) + (colPages * colCost);
+
+            document.getElementById('book-result-label').innerHTML = `(${bwPages} hal &times; Rp${bwCost.toLocaleString('id-ID')}) + (${colPages} hal &times; Rp${colCost.toLocaleString('id-ID')}) = <span class="text-indigo-600 text-sm font-extrabold">${formatRupiah(totalIsiCost)}</span>`;
+
+            // Sync to the locked main input
+            document.getElementById('ink-cost').value = totalIsiCost;
+        }
+
+        // Calculation of spanduk area (Panjang * Lebar * Pcs)
+        function calculateBannerArea() {
+            const length = parseFloat(document.getElementById('banner-length').value) || 0;
+            const width = parseFloat(document.getElementById('banner-width').value) || 0;
+            const pcs = parseInt(document.getElementById('banner-pcs').value) || 0;
+            const totalM2 = Math.round((length * width * pcs) * 100) / 100; // rounded 2 decimals
+
+            document.getElementById('banner-result-label').innerHTML = `${length}m x ${width}m x ${pcs} Pcs = <span class="text-indigo-600 text-sm font-extrabold">${totalM2} m²</span>`;
+            document.getElementById('qty').value = totalM2;
+        }
+
+        // Toggle state optional sections
+        function toggleSection(sectionId, checkbox) {
+            const el = document.getElementById(sectionId);
+            if (checkbox.checked) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.classList.remove('opacity-40');
+            } else {
+                el.style.opacity = '0.4';
+                el.style.pointerEvents = 'none';
+                el.classList.add('opacity-40');
+            }
+            calculateAll();
+        }
+
+        // Apply pre-set paper materials from templates
+        function applyPaperPreset(name, cost) {
+            document.getElementById('paper-name').value = name;
+            document.getElementById('paper-cost').value = cost;
+
+            const buttons = document.querySelectorAll('.preset-paper-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-indigo-50', 'text-indigo-600', 'border-indigo-300');
+            });
+
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('bg-indigo-50', 'text-indigo-600', 'border-indigo-300');
+            }
+
+            showToast(`Preset media '${name}' diterapkan`, 'success');
+            calculateAll();
+        }
+
+        // Manage Lamination Select Dropdown value
+        function applyLaminationValue() {
+            const selectVal = document.getElementById('lamination-type').value;
+            const customWrapper = document.getElementById('lamination-custom-wrapper');
+            const costInput = document.getElementById('lamination-cost');
+
+            if (selectVal === 'custom') {
+                customWrapper.style.opacity = '1';
+                customWrapper.style.pointerEvents = 'auto';
+                costInput.value = 5000;
+            } else {
+                costInput.value = parseInt(selectVal) || 0;
+            }
+        }
+
+        // Sync slider to input and vice-versa
+        function syncSliderToInput(val) {
+            document.getElementById('profit-percent').value = val;
+            calculateAll();
+        }
+
+        // Helper: Format to Indonesian Rupiah Currency
+        function formatRupiah(num) {
+            return 'Rp ' + Math.round(num).toLocaleString('id-ID');
+        }
+
+        // Core Calculation Engine
+        function calculateAll() {
+            const category = document.getElementById('product-category').value;
+            const meta = presetsData[category];
+
+            // Get Quantity
+            const qty = Math.max(0.1, parseFloat(document.getElementById('qty').value) || 0);
+
+            // Calculate Core/Pokok Costs
+            const inkCostPerUnit = parseInt(document.getElementById('ink-cost').value) || 0;
+            const powerCostPerUnit = parseInt(document.getElementById('power-cost').value) || 0;
+            const coreHppPerUnit = inkCostPerUnit + powerCostPerUnit;
+
+            // Calculate Paper Costs (check if enabled)
+            const isPaperEnabled = document.getElementById('paper-toggle').checked;
+            const paperCostPerUnit = isPaperEnabled ? (parseInt(document.getElementById('paper-cost').value) || 0) : 0;
+
+            // Calculate Finishing Costs (check if enabled)
+            const isFinishingEnabled = document.getElementById('finishing-toggle').checked;
+
+            let laminationCostPerUnit = 0;
+            let cuttingCostTotal = 0;
+
+            if (isFinishingEnabled) {
+                laminationCostPerUnit = parseInt(document.getElementById('lamination-cost').value) || 0;
+
+                const cuttingType = document.getElementById('cutting-type').value;
+                const rawCuttingCost = parseInt(document.getElementById('cutting-cost').value) || 0;
+
+                if (cuttingType === 'per_sheet') {
+                    cuttingCostTotal = rawCuttingCost * qty;
+                    document.getElementById('cutting-note').innerText = `Dikenakan per unit (Total: ${formatRupiah(cuttingCostTotal)})`;
+                } else {
+                    cuttingCostTotal = rawCuttingCost;
+                    document.getElementById('cutting-note').innerText = "Dikenakan secara borongan ke total produksi";
+                }
+            } else {
+                document.getElementById('cutting-note').innerText = "Finishing dinonaktifkan";
+            }
+
+            // Calculations
+            const totalCoreCost = coreHppPerUnit * qty;
+            const totalPaperCost = paperCostPerUnit * qty;
+            const totalLaminationCost = laminationCostPerUnit * qty;
+
+            // Total HPP
+            const totalHpp = totalCoreCost + totalPaperCost + totalLaminationCost + cuttingCostTotal;
+            const hppPerUnit = totalHpp / qty;
+
+            // Selling Price Simulator
+            const profitPercent = Math.max(0, parseFloat(document.getElementById('profit-percent').value) || 0);
+            const sellingPricePerUnit = hppPerUnit * (1 + (profitPercent / 100));
+            const totalRevenue = sellingPricePerUnit * qty;
+            const totalProfit = totalRevenue - totalHpp;
+
+            // Sync profit slider if values are within standard range
+            const slider = document.getElementById('profit-slider');
+            if (profitPercent <= 150) {
+                slider.value = profitPercent;
+            }
+
+            // Update UI Summary Panel (Right side)
+            document.getElementById('summary-qty').innerText = `${qty.toLocaleString('id-ID')} ${meta.unit}`;
+            document.getElementById('summary-total-hpp').innerText = formatRupiah(totalHpp);
+            document.getElementById('summary-unit-hpp').innerText = `${formatRupiah(hppPerUnit)} / ${meta.unitShort}`;
+            document.getElementById('summary-unit-price').innerText = `${formatRupiah(sellingPricePerUnit)} / ${meta.unitShort}`;
+            document.getElementById('summary-total-revenue').innerText = formatRupiah(totalRevenue);
+            document.getElementById('summary-total-profit').innerText = formatRupiah(totalProfit);
+
+            // Return calculated payload for actions
+            return {
+                category: meta.label,
+                unit: meta.unit,
+                unitShort: meta.unitShort,
+                qty,
+                inkCostPerUnit,
+                powerCostPerUnit,
+                paperName: isPaperEnabled ? document.getElementById('paper-name').value : 'Tanpa Kertas/Media',
+                paperCostPerUnit,
+                laminationCostPerUnit,
+                cuttingCostTotal,
+                totalHpp,
+                hppPerUnit,
+                profitPercent,
+                sellingPricePerUnit,
+                totalRevenue,
+                totalProfit
+            };
+        }
+
+        // Action: Reset Form to Defaults of Current Category
+        function resetForm() {
+            switchProductCategory();
+            showToast("Form berhasil di-reset ke nilai bawaan.", "info");
+        }
+
+        // Action: Save Current calculation state into History Session
+        function saveToHistory() {
+            const currentData = calculateAll();
+            const timestamp = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const historyItem = {
+                id: Date.now(),
+                time: timestamp,
+                ...currentData
+            };
+
+            calculationHistory.unshift(historyItem);
+            updateHistoryUI();
+            showToast("Estimasi kalkulasi berhasil disimpan ke riwayat!", "success");
+        }
+
+        // Action: Update History Table UI
+        function updateHistoryUI() {
+            const wrapper = document.getElementById('history-table-wrapper');
+            const emptyState = document.getElementById('history-empty-state');
+            const rowsContainer = document.getElementById('history-rows');
+            const clearBtn = document.getElementById('clear-history-btn');
+
+            if (calculationHistory.length === 0) {
+                wrapper.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            wrapper.classList.remove('hidden');
+            clearBtn.classList.remove('hidden');
+
+            rowsContainer.innerHTML = '';
+
+            calculationHistory.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-400">${item.time}</td>
+                    <td class="py-3 px-4 font-bold text-slate-700">${item.category}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${item.paperName}</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-900">${item.qty.toLocaleString('id-ID')} ${item.unitShort}</td>
+                    <td class="py-3 px-4 text-right text-slate-600">${formatRupiah(item.hppPerUnit)}</td>
+                    <td class="py-3 px-4 text-right font-bold text-slate-900">${formatRupiah(item.totalHpp)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-block px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px]">${item.profitPercent}%</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-bold text-emerald-600">${formatRupiah(item.sellingPricePerUnit)}</td>
+                    <td class="py-3 px-4 text-right font-bold text-slate-800">${formatRupiah(item.totalProfit)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="deleteHistoryItem(${item.id})" class="text-rose-600 hover:text-rose-800" title="Hapus">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                rowsContainer.appendChild(tr);
+            });
+        }
+
+        // Delete individual history row
+        function deleteHistoryItem(id) {
+            calculationHistory = calculationHistory.filter(x => x.id !== id);
+            updateHistoryUI();
+            showToast("Item riwayat dihapus", "info");
+        }
+
+        // Delete all saved calculations
+        function clearHistory() {
+            calculationHistory = [];
+            updateHistoryUI();
+            showToast("Seluruh riwayat berhasil dihapus", "info");
+        }
+
+        // Action: Generate Print Layout & Trigger PDF Print Dialogue
+        function triggerPrint() {
+            const data = calculateAll();
+            const categoryKey = document.getElementById('product-category').value;
+            const meta = presetsData[categoryKey];
+
+            // Set Print Date metadata
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', options);
+
+            // Populate Specs
+            document.getElementById('print-spec-category').innerText = data.category;
+            document.getElementById('print-spec-qty').innerText = `${data.qty.toLocaleString('id-ID')} ${data.unit}`;
+            document.getElementById('print-spec-paper').innerText = data.paperName;
+
+            const isFinishing = document.getElementById('finishing-toggle').checked;
+            const laminationTypeLabel = document.getElementById('lamination-type').options[document.getElementById('lamination-type').selectedIndex]?.text || 'Tanpa Finishing';
+            document.getElementById('print-spec-lamination').innerText = isFinishing ? laminationTypeLabel : 'Tanpa Finishing';
+            document.getElementById('print-spec-margin').innerText = `${data.profitPercent}%`;
+            document.getElementById('print-spec-unit-price').innerText = `${formatRupiah(data.sellingPricePerUnit)} / ${data.unitShort}`;
+            document.getElementById('print-spec-total-revenue').innerText = formatRupiah(data.totalRevenue);
+
+            // Populate Itemized Component Table
+            document.getElementById('print-comp-ink-label').innerText = meta.inkLabel;
+            document.getElementById('print-comp-ink-unit').innerText = formatRupiah(data.inkCostPerUnit);
+            document.getElementById('print-comp-ink-qty').innerText = `${data.qty} ${data.unitShort}`;
+            document.getElementById('print-comp-ink-sub').innerText = formatRupiah(data.inkCostPerUnit * data.qty);
+
+            document.getElementById('print-comp-power-unit').innerText = formatRupiah(data.powerCostPerUnit);
+            document.getElementById('print-comp-power-qty').innerText = `${data.qty} ${data.unitShort}`;
+            document.getElementById('print-comp-power-sub').innerText = formatRupiah(data.powerCostPerUnit * data.qty);
+
+            // Optional Paper Component
+            const paperRow = document.getElementById('print-row-paper');
+            if (data.paperCostPerUnit > 0) {
+                paperRow.style.display = 'table-row';
+                document.getElementById('print-comp-paper-name').innerText = `${data.paperName} (Media)`;
+                document.getElementById('print-comp-paper-unit').innerText = formatRupiah(data.paperCostPerUnit);
+                document.getElementById('print-comp-paper-qty').innerText = `${data.qty} ${data.unitShort}`;
+                document.getElementById('print-comp-paper-sub').innerText = formatRupiah(data.paperCostPerUnit * data.qty);
+            } else {
+                paperRow.style.display = 'none';
+            }
+
+            // Optional Lamination Component
+            const lamRow = document.getElementById('print-row-lamination');
+            if (isFinishing && data.laminationCostPerUnit > 0) {
+                lamRow.style.display = 'table-row';
+                document.getElementById('print-comp-lam-unit').innerText = formatRupiah(data.laminationCostPerUnit);
+                document.getElementById('print-comp-lam-qty').innerText = `${data.qty} ${data.unitShort}`;
+                document.getElementById('print-comp-lam-sub').innerText = formatRupiah(data.laminationCostPerUnit * data.qty);
+            } else {
+                lamRow.style.display = 'none';
+            }
+
+            // Optional Cutting / Other Component
+            const cutRow = document.getElementById('print-row-cutting');
+            if (isFinishing && data.cuttingCostTotal > 0) {
+                cutRow.style.display = 'table-row';
+                document.getElementById('print-comp-cut-label').innerText = meta.cuttingLabel;
+                const cuttingType = document.getElementById('cutting-type').value;
+                if (cuttingType === 'per_sheet') {
+                    const singleCutCost = parseInt(document.getElementById('cutting-cost').value) || 0;
+                    document.getElementById('print-comp-cut-unit').innerText = formatRupiah(singleCutCost);
+                    document.getElementById('print-comp-cut-qty').innerText = `${data.qty} ${data.unitShort}`;
+                } else {
+                    document.getElementById('print-comp-cut-unit').innerText = "Flat Borongan";
+                    document.getElementById('print-comp-cut-qty').innerText = "1 Paket";
+                }
+                document.getElementById('print-comp-cut-sub').innerText = formatRupiah(data.cuttingCostTotal);
+            } else {
+                cutRow.style.display = 'none';
+            }
+
+            // Totals
+            document.getElementById('print-comp-total-hpp').innerText = formatRupiah(data.totalHpp);
+            document.getElementById('print-comp-unit-hpp').innerText = `${formatRupiah(data.hppPerUnit)} / ${data.unitShort}`;
+
+            // Trigger System Print Dialogue
+            window.print();
+        }
+
+        // Custom Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold transform translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto bg-white`;
+
+            // Set styles based on notification type
+            if (type === 'success') {
+                toast.classList.add('text-emerald-800', 'border-emerald-100', 'bg-emerald-50');
+            } else if (type === 'rose') {
+                toast.classList.add('text-rose-800', 'border-rose-100', 'bg-rose-50');
+            } else {
+                toast.classList.add('text-slate-800', 'border-slate-200', 'bg-white');
+            }
+
+            toast.innerHTML = `
+                <span class="w-1.5 h-1.5 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-indigo-500'}"></span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate In
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            // Animate Out & Clear
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialization on Load
+        window.onload = function () {
+            switchProductCategory();
+            calculatePaperUnit();
+        }
+    </script>
+</body>
+
+</html>
